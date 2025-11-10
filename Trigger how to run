@@ -1,0 +1,73 @@
+//connect to sys database
+(base) comp-pl-18@comp-pl-18:~$ sqlplus sys as sysdba
+SQL*Plus: Release 11.2.0.2.0 Production on Mon Nov 3 11:05:46 2025
+Copyright (c) 1982, 2011, Oracle. All rights reserved.
+Enter password:
+Connected to:
+Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production
+==================================================================================
+=========================================================
+//create new user
+SQL> create user appuser IDENTIFIED BY app123;
+User created.
+NOTE: IF previous user with this name is already created by any student on that system then we can
+drop that user by following query: drop user appuser; otherwise will get error msg
+Like username appuser conflicts with another user or rolename.
+and again try to create otherwise instead of appuser take any another name to create user.
+==================================================================================
+==========================================================
+//grant privileges to new user
+SQL> grant CONNECT, RESOURCE TO appuser;
+
+Grant succeeded.
+==================================================================================
+===========================================================
+//login as new user
+SQL> exit;
+Disconnected from Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production
+(base) comp-pl-18@comp-pl-18:~$ sqlplus appuser/app123
+SQL*Plus: Release 11.2.0.2.0 Production on Mon Nov 3 11:15:14 2025
+Copyright (c) 1982, 2011, Oracle. All rights reserved.
+Connected to:
+Oracle Database 11g Express Edition Release 11.2.0.2.0 - 64bit Production
+==================================================================================
+===========================================================
+//create table
+SQL> CREATE TABLE STUDENT (
+Roll_No NUMBER PRIMARY KEY,
+Name VARCHAR(20),
+Marks NUMBER(5)
+);
+Table created.
+
+//create trigger
+SQL>CREATE OR REPLACE TRIGGER msg
+AFTER INSERT OR UPDATE OR DELETE ON STUDENT
+FOR EACH ROW
+BEGIN
+IF INSERTING THEN
+DBMS_OUTPUT.PUT_LINE('Student inserted: Roll No =' || :NEW.Roll_No
+|| ', Name = ' || :NEW.Name);
+ELSIF UPDATING THEN
+DBMS_OUTPUT.PUT_LINE('Student updated: Old Marks = ' ||
+:OLD.Marks || ', New Marks = ' || :NEW.Marks);
+ELSIF DELETING THEN
+DBMS_OUTPUT.PUT_LINE('Student deleted: Roll No = ' || :OLD.Roll_No
+|| ', Name = ' || :OLD.Name);
+END IF;
+END;
+/
+Trigger created.
+==================================================================================
+==========================================================
+
+SQL> set serveroutput on;
+SQL> insert into student values(2,'PQR',79);
+Student inserted: Roll No =2, Name = PQR
+1 row created.
+SQL> update student set marks = 85 where Roll_No = 2;
+Student updated: Old Marks = 79, New Marks = 85
+1 row updated.
+SQL> delete from student where Roll_No = 2;
+Student deleted: Roll No = 2, Name = PQR
+
