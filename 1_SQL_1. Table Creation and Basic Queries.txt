@@ -1,0 +1,95 @@
+1
+SQL Queries
+
+Account(Acc_no, branch_name,balance)
+branch(branch_name,branch_city,assets)
+customer(cust_name,cust_street,cust_city)
+Depositor(cust_name,acc_no)
+Loan(loan_no,branch_name,amount)
+Borrower(cust_name,loan_no)
+
+Solve following query:
+Create above tables with appropriate constraints like primary key, foreign key, check constraints, not null etc.
+a) Find the names of all branches in loan relation.
+b) Find all loan numbers for loans made at 'Shivaji Nagar' Branch with loan amount > 12000.
+c) Find all customers who have a loan from bank. Find their names,loan_no and loan amount.
+d) List all customers in alphabetical order who have loan from Akurdi branch.
+
+
+--------
+
+
+-- branch table
+CREATE TABLE branch (
+    branch_name VARCHAR(50) PRIMARY KEY,
+    branch_city VARCHAR(50) NOT NULL,
+    assets NUMERIC(15, 2) CHECK (assets >= 0)
+);
+
+-- customer table
+CREATE TABLE customer (
+    cust_name VARCHAR(50) PRIMARY KEY,
+    cust_street VARCHAR(50),
+    cust_city VARCHAR(50)
+);
+
+-- Account table
+CREATE TABLE Account (
+    Acc_no VARCHAR(10) PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    balance NUMERIC(10, 2) CHECK (balance >= 0),
+    FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+-- Loan table
+CREATE TABLE Loan (
+    loan_no VARCHAR(10) PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    amount NUMERIC(10, 2) CHECK (amount > 0),
+    FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+-- Depositor table (Many-to-Many between Customer and Account)
+CREATE TABLE Depositor (
+    cust_name VARCHAR(50),
+    acc_no VARCHAR(10),
+    PRIMARY KEY (cust_name, acc_no),
+    FOREIGN KEY (cust_name) REFERENCES customer(cust_name),
+    FOREIGN KEY (acc_no) REFERENCES Account(Acc_no)
+);
+
+-- Borrower table (Many-to-Many between Customer and Loan)
+CREATE TABLE Borrower (
+    cust_name VARCHAR(50),
+    loan_no VARCHAR(10),
+    PRIMARY KEY (cust_name, loan_no),
+    FOREIGN KEY (cust_name) REFERENCES customer(cust_name),
+    FOREIGN KEY (loan_no) REFERENCES Loan(loan_no)
+);
+
+
+
+
+
+
+
+
+
+SELECT DISTINCT branch_name
+FROM Loan;
+
+SELECT loan_no
+FROM Loan
+WHERE branch_name = 'Shivaji Nagar' AND amount > 12000;
+
+
+SELECT T1.cust_name, T2.loan_no, T2.amount
+FROM Borrower AS T1
+JOIN Loan AS T2 ON T1.loan_no = T2.loan_no;
+
+
+SELECT DISTINCT T1.cust_name
+FROM Borrower AS T1
+JOIN Loan AS T2 ON T1.loan_no = T2.loan_no
+WHERE T2.branch_name = 'Akurdi'
+ORDER BY T1.cust_name ASC;

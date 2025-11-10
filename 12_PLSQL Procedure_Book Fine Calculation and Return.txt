@@ -1,0 +1,83 @@
+12
+PL/SQL procedure 
+
+1. Borrower(Roll_no, Name, DateofIssue, NameofBook, Status)
+2. Fine(Roll_no,Date,Amt)
+
+Accept Roll_no and NameofBook from user.
+   Write a PL/SQL procedure. The procedure calculates the fine and  performs the book returning    operation
+
+Assume suitable conditions for calculating fine.
+Check the number of days (from date of issue).
+If days are between 15 to 30 then fine amount will be Rs 5per day.
+If no. of days>30, per day fine will be Rs 50 per day and for days less than 30, Rs. 5 per day.
+If condition of fine is true, then details will be stored into fine table.
+Also handles the exception by named exception handler or user define exception handler.
+
+
+
+----
+
+-- Create a custom exception for a book that is already returned
+CREATE OR REPLACE PROCEDURE Proc_Return_Book (
+    p_roll_no IN Borrower.Roll_no%TYPE,
+    p_book_name IN Borrower.NameofBook%TYPE
+)
+IS
+    v_issue_date Borrower.DateofIssue%TYPE;
+    v_status Borrower.Status%TYPE;
+    v_days_delayed NUMBER;
+    v_fine_amount NUMBER := 0;
+    e_book_already_returned EXCEPTION;
+BEGIN
+    -- 1. Get issue date and current status
+    SELECT DateofIssue, Status INTO v_issue_date, v_status
+    FROM Borrower
+    WHERE Roll_no = p_roll_no AND NameofBook = p_book_name AND Status = 'Issued';
+
+    IF v_status = 'Returned' THEN
+        RAISE e_book_already_returned;
+    END IF;
+
+    -- 2. Calculate days delayed
+    v_days_delayed := TRUNC(SYSDATE) - v_issue_date;
+
+    -- 3. Calculate fine
+    IF v_days_delayed > 30 THEN
+        -- Rs. 50 per day for days > 30, and Rs 5 per day for days 15-30
+        v_fine_amount := (v_days_delayed - 30) * 50 + (30 - 15) * 5;
+    ELSIF v_days_delayed > 15 THEN
+        -- Rs 5 per day for days 15-30
+        v_fine_amount := (v_days_delayed - 15) * 5;
+    END IF;
+
+    -- 4. Store fine details if fine is true (v_fine_amount > 0)
+    IF v_fine_amount > 0 THEN
+        INSERT INTO Fine (Roll_no, FineDate, Amt) -- Using FineDate instead of Date to avoid keyword conflict
+        VALUES (p_roll_no, SYSDATE, v_fine_amount);
+        DBMS_OUTPUT.PUT_LINE('Fine of Rs. ' || v_fine_amount || ' levied.');
+    END IF;
+
+    -- 5. Perform the book returning operation
+    UPDATE Borrower
+    SET Status = 'Returned'
+    WHERE Roll_no = p_roll_no AND NameofBook = p_book_name AND Status = 'Issued';
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Book ' || p_book_name || ' successfully returned.');
+
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        DBMS_OUTPUT.PUT_LINE('Error: Book not found as issued for Roll No: ' || p_roll_no || ' and Book: ' || p_book_name);
+    WHEN e_book_already_returned THEN
+        DBMS_OUTPUT.PUT_LINE('Error: This book is already marked as returned.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('An unexpected error occurred: ' || SQLERRM);
+END Proc_Return_Book;
+/
+
+-- To execute the procedure (example)
+/*
+SET SERVEROUTPUT ON;
+EXEC Proc_Return_Book('R101', 'Database Systems');
+*/

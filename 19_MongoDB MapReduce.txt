@@ -1,0 +1,113 @@
+19
+MapReduce
+Create a customer collection consisting of fields like name, email ID, profession, gender, bill amount
+
+1. Write a MapReduce query for finding the count of male and female customers in the collection
+2. Write a MapReduce query for finding the count of each profession in the collection
+3. Display list of all customers with bill amounts greater than 5000/-
+4. Update the bill amount of any one customer
+5. Display all customers with name starting with 'B'
+6. Display list of all customers with profession = “Business”
+7. Display all customers in Descending order of  Bill amount
+8. Create an index on name field of customer collection. Also use the explain() function
+
+
+
+------
+
+
+db.createCollection("customer");
+db.customer.insertMany([
+    { name: "Ben", profession: "Engineer", gender: "male", bill_amount: 6000 },
+    { name: "Maya", profession: "Doctor", gender: "female", bill_amount: 4500 },
+    { name: "Gopal", profession: "Business", gender: "male", bill_amount: 7200 },
+    { name: "Bela", profession: "Engineer", gender: "female", bill_amount: 3000 }
+]);
+
+
+
+
+
+
+
+
+
+
+var mapGender = function() {
+    emit(this.gender, 1);
+};
+
+var reduceCount = function(key, values) {
+    return Array.sum(values);
+};
+
+db.customer.mapReduce(
+    mapGender,
+    reduceCount,
+    { out: "customer_gender_counts" }
+);
+
+db.customer_gender_counts.find();
+
+
+
+
+
+
+var mapProfession = function() {
+    emit(this.profession, 1);
+};
+
+db.customer.mapReduce(
+    mapProfession,
+    reduceCount,
+    { out: "customer_profession_counts" }
+);
+
+db.customer_profession_counts.find();
+
+
+
+
+db.customer.find({ bill_amount: { $gt: 5000 } });
+
+
+
+
+
+db.customer.updateOne(
+    { name: "Maya" },
+    { $set: { bill_amount: 5000 } }
+);
+
+
+
+
+
+
+
+db.customer.find({ name: /^B/ });
+
+
+
+
+
+
+
+
+db.customer.find({ profession: "Business" });
+
+
+
+
+
+db.customer.find().sort({ bill_amount: -1 });
+
+
+
+
+
+
+db.customer.createIndex({ name: 1 });
+
+db.customer.find({ name: "Gopal" }).explain("executionStats");

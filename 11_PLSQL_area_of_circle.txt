@@ -1,0 +1,33 @@
+11
+PL/SQL
+
+Write a PL/SQL code block to calculate the area of a circle for a value of radius varying from 5 to
+9. Store the radius and the corresponding values of calculated area in an empty table named areas, consisting of two columns, radius and area
+
+
+
+----------
+
+-- Assuming a table named 'areas' is created:
+-- CREATE TABLE areas (radius NUMBER, area NUMBER);
+
+DECLARE
+    v_radius NUMBER;
+    v_area NUMBER;
+    c_pi CONSTANT NUMBER := 3.14159;
+BEGIN
+    v_radius := 5;
+
+    WHILE v_radius <= 9 LOOP
+        v_area := c_pi * v_radius * v_radius;
+
+        INSERT INTO areas (radius, area)
+        VALUES (v_radius, v_area);
+
+        v_radius := v_radius + 1;
+    END LOOP;
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Area calculations stored successfully for radius 5 to 9.');
+END;
+/

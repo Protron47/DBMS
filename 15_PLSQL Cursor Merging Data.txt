@@ -1,0 +1,56 @@
+15
+ Cursor
+
+Write a PL/SQL block of code using Cursor that will merge the data available in the newly created table N_RollCall with the data available in the table O_RollCall. If the data in the first table already exist in the second table then that data should be skipped.
+
+
+
+
+------
+
+
+
+DECLARE
+    CURSOR c_new_rollcall IS
+        SELECT Roll_no, Student_Name
+        FROM N_RollCall;
+
+    v_roll_no O_RollCall.Roll_no%TYPE;
+    v_name O_RollCall.Student_Name%TYPE;
+
+    e_duplicate_record EXCEPTION;
+    PRAGMA EXCEPTION_INIT(e_duplicate_record, -00001); -- For Oracle: Catch unique constraint violation
+
+BEGIN
+    FOR rec_new IN c_new_rollcall LOOP
+        BEGIN
+            -- Check if the record already exists in O_RollCall
+            SELECT Roll_no INTO v_roll_no
+            FROM O_RollCall
+            WHERE Roll_no = rec_new.Roll_no;
+
+            -- If SELECT succeeds, the record exists, so skip (or handle as needed)
+            DBMS_OUTPUT.PUT_LINE('Skipped: Roll No ' || rec_new.Roll_no || ' already exists in O_RollCall.');
+
+        EXCEPTION
+            WHEN NO_DATA_FOUND THEN
+                -- Record does not exist, so insert it
+                INSERT INTO O_RollCall (Roll_no, Student_Name)
+                VALUES (rec_new.Roll_no, rec_new.Student_Name);
+                DBMS_OUTPUT.PUT_LINE('Inserted: Roll No ' || rec_new.Roll_no || ' into O_RollCall.');
+
+            WHEN e_duplicate_record THEN
+                -- This handler is useful if the check above is too slow, and we rely on the PK violation
+                DBMS_OUTPUT.PUT_LINE('Skipped (PK Violation): Roll No ' || rec_new.Roll_no);
+        END;
+    END LOOP;
+
+    COMMIT;
+    DBMS_OUTPUT.PUT_LINE('Data merge completed.');
+END;
+/
+
+
+
+
+

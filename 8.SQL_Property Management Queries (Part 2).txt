@@ -1,0 +1,67 @@
+8.SQL queries
+
+Basic SQL Create following tables with suitable constraints. 
+Insert data and solve the following queries:
+
+PROPERTIES(Pno, Type, Sq_Ft_Area, Rent, Address, Status, Owner No)
+OWNERS (OwnerNo, OwnerName, Phno)
+
+5. Create a view which shows OwnerName along with his Pno, type, Address and Rent
+6. Display the names of all Owners whose name has “ee”
+7. Display Pno, Type, Address, Rent and status of all properties with rent greater than 15000/- and less than 22000/-
+8. Display different property types registered with the real estate agency
+
+
+----
+
+
+
+
+
+CREATE TABLE OWNERS (
+    OwnerNo VARCHAR(10) PRIMARY KEY,
+    OwnerName VARCHAR(50) NOT NULL,
+    Phno VARCHAR(15) UNIQUE
+);
+
+CREATE TABLE PROPERTIES (
+    Pno VARCHAR(10) PRIMARY KEY,
+    Type VARCHAR(20),
+    Sq_Ft_Area INT CHECK (Sq_Ft_Area > 0),
+    Rent NUMERIC(10, 2) CHECK (Rent > 0),
+    Address VARCHAR(100),
+    Status VARCHAR(20) CHECK (Status IN ('Rented', 'Available', 'Maintenance')),
+    OwnerNo VARCHAR(10),
+    FOREIGN KEY (OwnerNo) REFERENCES OWNERS(OwnerNo)
+);
+
+
+
+
+
+CREATE VIEW Owner_Property_View AS
+SELECT T2.OwnerName, T1.Pno, T1.Type, T1.Address, T1.Rent
+FROM PROPERTIES T1
+JOIN OWNERS T2 ON T1.OwnerNo = T2.OwnerNo;
+
+
+
+
+SELECT OwnerName
+FROM OWNERS
+WHERE OwnerName LIKE '%ee%';
+
+
+
+
+SELECT Pno, Type, Address, Rent, Status
+FROM PROPERTIES
+WHERE Rent > 15000 AND Rent < 22000;
+-- OR: WHERE Rent BETWEEN 15000.01 AND 21999.99; (To be strictly > 15000 and < 22000)
+
+
+
+SELECT DISTINCT Type
+FROM PROPERTIES;
+
+

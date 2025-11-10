@@ -1,0 +1,90 @@
+SQL Queries
+
+Account(Acc_no, branch_name,balance)
+branch(branch_name,branch_city,assets)
+customer(cust_name,cust_street,cust_city)
+Depositor(cust_name,acc_no)
+Loan(loan_no,branch_name,amount)
+Borrower(cust_name,loan_no)
+
+Create  Table, View, Index, Sequence, Synonym ,different constraints for above schema
+
+
+----
+
+-- branch table
+CREATE TABLE branch (
+    branch_name VARCHAR(50) PRIMARY KEY,
+    branch_city VARCHAR(50) NOT NULL,
+    assets NUMERIC(15, 2) CHECK (assets >= 0)
+);
+
+-- customer table
+CREATE TABLE customer (
+    cust_name VARCHAR(50) PRIMARY KEY,
+    cust_street VARCHAR(50),
+    cust_city VARCHAR(50)
+);
+
+-- Account table
+CREATE TABLE Account (
+    Acc_no VARCHAR(10) PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    balance NUMERIC(10, 2) CHECK (balance >= 0),
+    FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+-- Loan table
+CREATE TABLE Loan (
+    loan_no VARCHAR(10) PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    amount NUMERIC(10, 2) CHECK (amount > 0),
+    FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+-- Depositor table (Many-to-Many between Customer and Account)
+CREATE TABLE Depositor (
+    cust_name VARCHAR(50),
+    acc_no VARCHAR(10),
+    PRIMARY KEY (cust_name, acc_no),
+    FOREIGN KEY (cust_name) REFERENCES customer(cust_name),
+    FOREIGN KEY (acc_no) REFERENCES Account(Acc_no)
+);
+
+-- Borrower table (Many-to-Many between Customer and Loan)
+CREATE TABLE Borrower (
+    cust_name VARCHAR(50),
+    loan_no VARCHAR(10),
+    PRIMARY KEY (cust_name, loan_no),
+    FOREIGN KEY (cust_name) REFERENCES customer(cust_name),
+    FOREIGN KEY (loan_no) REFERENCES Loan(loan_no)
+);
+
+
+
+
+
+CREATE VIEW Customer_Loan_View AS
+SELECT T1.cust_name, T2.loan_no, T2.amount, T2.branch_name
+FROM Borrower T1
+JOIN Loan T2 ON T1.loan_no = T2.loan_no;
+
+
+CREATE INDEX idx_branch_city ON branch (branch_city);
+
+
+
+
+-- For Oracle/PostgreSQL
+CREATE SEQUENCE account_id_seq START WITH 1 INCREMENT BY 1;
+
+
+
+-- For Oracle
+CREATE SYNONYM Acct FOR Account;
+
+
+
+
+
+

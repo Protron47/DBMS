@@ -1,0 +1,38 @@
+16
+Trigger
+
+Write a after trigger for Insert, update and delete event considering following requirement:
+Emp(Emp_no, Emp_name, Emp_salary)
+a) Trigger should be initiated when salary tried to be inserted is less than Rs.50,000/-
+b) Trigger should be initiated when salary tried to be updated for value less than Rs. 50,000/-
+c) Also the new values expected to be inserted will be stored in new table Tracking(Emp_no,Emp_salary).
+
+
+
+--------
+
+
+CREATE OR REPLACE TRIGGER trg_track_salary_changes
+AFTER INSERT OR UPDATE ON Emp
+FOR EACH ROW
+WHEN (NEW.Emp_salary < 50000)
+DECLARE
+    -- No local variables needed
+BEGIN
+    -- Action for INSERT or UPDATE when the new salary is less than 50000
+    INSERT INTO Tracking (Emp_no, Emp_salary)
+    VALUES (:NEW.Emp_no, :NEW.Emp_salary);
+
+    -- Note: The requirement is for the trigger to be initiated *when salary tried to be inserted/updated*
+    -- If the *goal* is to prevent the low salary, a BEFORE trigger would be used with a RAISE_APPLICATION_ERROR.
+    -- Since it's an AFTER trigger, it only tracks the transaction that already happened.
+
+EXCEPTION
+    WHEN OTHERS THEN
+        -- Log or handle errors if insertion into Tracking fails
+        DBMS_OUTPUT.PUT_LINE('Error tracking salary change: ' || SQLERRM);
+END;
+/
+
+-- NOTE: The DELETE requirement is missing the action. The trigger above covers INSERT/UPDATE tracking.
+-- If tracking a low salary *deletion* is intended, the WHEN clause is irrelevant for a DELETE.

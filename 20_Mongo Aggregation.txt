@@ -1,0 +1,112 @@
+20
+Mongo Aggregation
+
+Create a student collection consisting of fields like Roll No, name, class, marks, sports etc
+
+
+1. Display the first 5 toppers of TE
+
+2. Display marks of topper of each division
+
+3. Display the average marks of each division
+
+4. Display the rollcall of TE Comp A
+
+5. Display list of fail students from TE Comp A
+
+6. Display Name, Class and Marks of all students
+
+7. Display list of students who play football
+
+
+
+----
+
+
+
+db.createCollection("student");
+db.student.insertMany([
+    { "Roll No": 101, name: "A", class: "TE Comp A", marks: 95, sports: ["football", "cricket"] },
+    { "Roll No": 102, name: "B", class: "TE Comp A", marks: 88, sports: ["tennis"] },
+    { "Roll No": 103, name: "C", class: "TE Comp B", marks: 92, sports: ["football"] },
+    { "Roll No": 104, name: "D", class: "TE Comp B", marks: 85, sports: ["badminton"] },
+    { "Roll No": 105, name: "E", class: "SE Comp A", marks: 98, sports: ["football"] }
+]);
+
+
+
+
+
+
+
+db.student.aggregate([
+    { $match: { class: /^TE/ } }, // Filter for TE classes
+    { $sort: { marks: -1 } },      // Sort by marks descending
+    { $limit: 5 }                  // Limit to top 5
+]);
+
+
+
+
+
+
+db.student.aggregate([
+    { $sort: { marks: -1 } }, // Sort to ensure the max marks comes first in the group
+    {
+        $group: {
+            _id: "$class",
+            topper_name: { $first: "$name" },
+            topper_marks: { $max: "$marks" }
+        }
+    }
+]);
+
+
+
+
+
+
+db.student.aggregate([
+    {
+        $group: {
+            _id: "$class",
+            average_marks: { $avg: "$marks" }
+        }
+    }
+]);
+
+
+
+
+
+db.student.find(
+    { class: "TE Comp A" },
+    { "Roll No": 1, name: 1, _id: 0 } // Project Roll No and name
+).sort({ "Roll No": 1 });
+
+
+
+
+
+db.student.find({
+    class: "TE Comp A",
+    marks: { $lt: 40 }
+});
+
+
+
+
+
+
+db.student.find(
+    {},
+    { name: 1, class: 1, marks: 1, _id: 0 }
+);
+
+
+
+
+db.student.find({ sports: "football" });
+
+
+

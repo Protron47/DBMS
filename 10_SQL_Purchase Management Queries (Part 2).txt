@@ -1,0 +1,83 @@
+10.SQL queries
+
+Create following tables with suitable constraints. 
+Insert data and solve the following queries:
+
+CUSTOMERS(CNo, Cname, Ccity, CMobile)
+
+ITEMS(INo, Iname, Itype, Iprice, Icount)
+
+PURCHASE(PNo, Pdate, Pquantity, Cno, INo)
+
+5. Count the number of customers in every city
+
+6. Display all purchased quantity of Customer Maya
+
+7. Display list of customers whose name ends with 'a'
+8. Create view which shows Iname, Price and Count of all stationary items in descending order of price
+
+
+--------
+
+
+
+CREATE TABLE CUSTOMERS (
+    CNo VARCHAR(10) PRIMARY KEY,
+    Cname VARCHAR(50) NOT NULL,
+    Ccity VARCHAR(50),
+    CMobile VARCHAR(15) UNIQUE
+);
+
+CREATE TABLE ITEMS (
+    INo VARCHAR(10) PRIMARY KEY,
+    Iname VARCHAR(50) NOT NULL,
+    Itype VARCHAR(50),
+    Iprice NUMERIC(10, 2) CHECK (Iprice > 0),
+    Icount INT CHECK (Icount >= 0)
+);
+
+CREATE TABLE PURCHASE (
+    PNo VARCHAR(10) PRIMARY KEY,
+    Pdate DATE,
+    Pquantity INT CHECK (Pquantity > 0),
+    Cno VARCHAR(10),
+    INo VARCHAR(10),
+    FOREIGN KEY (Cno) REFERENCES CUSTOMERS(CNo),
+    FOREIGN KEY (INo) REFERENCES ITEMS(INo)
+);
+
+
+
+
+
+
+
+SELECT Ccity, COUNT(CNo) AS Number_of_Customers
+FROM CUSTOMERS
+GROUP BY Ccity;
+
+
+
+SELECT T3.Pquantity, T2.Iname, T1.Pdate
+FROM CUSTOMERS T1
+JOIN PURCHASE T3 ON T1.CNo = T3.Cno
+JOIN ITEMS T2 ON T3.INo = T2.INo
+WHERE T1.Cname = 'Maya';
+
+
+
+
+SELECT Cname
+FROM CUSTOMERS
+WHERE Cname LIKE '%a';
+
+
+
+
+
+CREATE VIEW Stationary_Items_View AS
+SELECT Iname, Iprice, Icount
+FROM ITEMS
+WHERE Itype = 'Stationary'
+ORDER BY Iprice DESC;
+

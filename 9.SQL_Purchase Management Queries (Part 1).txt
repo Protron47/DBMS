@@ -1,0 +1,73 @@
+9.SQL queries
+Create following tables with suitable constraints. Insert data and solve the following queries:
+
+CUSTOMERS(CNo, Cname, Ccity, CMobile)
+
+ITEMS(INo, Iname, Itype, Iprice, Icount)
+
+PURCHASE(PNo, Pdate, Pquantity, Cno, INo)
+
+
+1. List all stationary items with price between 400/- to 1000/-
+
+2. Change the mobile number of customer “Gopal”
+
+3. Display the item with maximum price
+
+4. Display all purchases sorted from the most recent to the oldest
+
+
+-------
+
+
+CREATE TABLE CUSTOMERS (
+    CNo VARCHAR(10) PRIMARY KEY,
+    Cname VARCHAR(50) NOT NULL,
+    Ccity VARCHAR(50),
+    CMobile VARCHAR(15) UNIQUE
+);
+
+CREATE TABLE ITEMS (
+    INo VARCHAR(10) PRIMARY KEY,
+    Iname VARCHAR(50) NOT NULL,
+    Itype VARCHAR(50),
+    Iprice NUMERIC(10, 2) CHECK (Iprice > 0),
+    Icount INT CHECK (Icount >= 0)
+);
+
+CREATE TABLE PURCHASE (
+    PNo VARCHAR(10) PRIMARY KEY,
+    Pdate DATE,
+    Pquantity INT CHECK (Pquantity > 0),
+    Cno VARCHAR(10),
+    INo VARCHAR(10),
+    FOREIGN KEY (Cno) REFERENCES CUSTOMERS(CNo),
+    FOREIGN KEY (INo) REFERENCES ITEMS(INo)
+);
+
+
+
+
+
+SELECT *
+FROM ITEMS
+WHERE Itype = 'Stationary' AND Iprice BETWEEN 400 AND 1000;
+
+
+UPDATE CUSTOMERS
+SET CMobile = '9988776655' -- Replace with the new mobile number
+WHERE Cname = 'Gopal';
+
+
+
+SELECT *
+FROM ITEMS
+ORDER BY Iprice DESC
+LIMIT 1; -- Use ROWNUM=1 (Oracle) or TOP 1 (SQL Server) if LIMIT is not supported
+
+
+
+SELECT *
+FROM PURCHASE
+ORDER BY Pdate DESC;
+

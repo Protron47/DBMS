@@ -1,0 +1,268 @@
+14
+Procedure 
+
+Write a Stored Procedure namely Proc_Grade for the categorization of student. If marks scored by students in examination is <=1500 and marks>=990 then student will be placed in distinction category if marks scored are between 989 and 900 category is first class, if marks 899 and 825 category is Higher Second Class.
+Write a PL/SQL block for using procedure created with above requirement.
+Stud_Marks(Roll, Name, Total_marks)
+Result(Roll, Name, Class)
+
+
+
+
+
+-------
+
+
+
+
+ 	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 1. CONFIGURATION AND TABLE CREATION
+-------------------------------------
+
+-- Enable output so you can see the results from the testing block
+SET SERVEROUTPUT ON;
+
+-- Create the table that stores the raw marks and name
+CREATE TABLE Stud_Marks (
+    Roll VARCHAR2(10) PRIMARY KEY,
+    Name VARCHAR2(50) NOT NULL,
+    Total_marks NUMBER(4, 0)
+);
+
+-- Create the table that stores the calculated result/class
+CREATE TABLE Result (
+    Roll VARCHAR2(10) PRIMARY KEY,
+    Name VARCHAR2(50),
+    Class VARCHAR2(30)
+);
+
+-- Insert a test record (R105, 950 marks)
+INSERT INTO Stud_Marks (Roll, Name, Total_marks) 
+VALUES ('R105', 'Amit Sharma', 950);
+
+-- Commit the setup data
+COMMIT;
+
+
+-- 2. STORED PROCEDURE DEFINITION (Proc_Grade)
+---------------------------------------------
+
+CREATE OR REPLACE PROCEDURE Proc_Grade (
+    p_roll IN Stud_Marks.Roll%TYPE,
+    p_name OUT Stud_Marks.Name%TYPE,
+    p_marks IN Stud_Marks.Total_marks%TYPE,
+    p_class OUT Result.Class%TYPE
+)
+IS
+BEGIN
+    -- Categorization logic based on marks input
+    IF p_marks <= 1500 AND p_marks >= 990 THEN
+        p_class := 'Distinction';
+    ELSIF p_marks BETWEEN 900 AND 989 THEN
+        p_class := 'First Class';
+    ELSIF p_marks BETWEEN 825 AND 899 THEN
+        p_class := 'Higher Second Class';
+    ELSE
+        p_class := 'Pass/Fail';
+    END IF;
+
+    -- Retrieve the student's name from the marks table
+    SELECT Name INTO p_name
+    FROM Stud_Marks
+    WHERE Roll = p_roll;
+
+    -- Insert the final result (Roll, Name, and calculated Class) into the Result table
+    INSERT INTO Result (Roll, Name, Class)
+    VALUES (p_roll, p_name, p_class);
+
+-- Error Handling
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        -- If the SELECT Name INTO fails (student not found)
+        p_name := 'N/A';
+        DBMS_OUTPUT.PUT_LINE('ERROR: Student Roll ' || p_roll || ' not found in Stud_Marks. No result recorded.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('UNEXPECTED ERROR in Proc_Grade: ' || SQLERRM);
+END Proc_Grade;
+/
+
+
+-- 3. PL/SQL TESTING BLOCK
+--------------------------
+
+DECLARE
+    -- Define input variables for testing (R105 with 950 marks -> First Class)
+    v_roll Stud_Marks.Roll%TYPE := 'R105'; 
+    v_marks Stud_Marks.Total_marks%TYPE := 950; 
+    
+    -- Variables to receive the output from the procedure
+    v_name Result.Name%TYPE;
+    v_class Result.Class%TYPE;
+BEGIN
+    -- Execute the stored procedure
+    DBMS_OUTPUT.PUT_LINE('Attempting to grade Roll: ' || v_roll || ' with Marks: ' || v_marks);
+    
+    Proc_Grade(
+        p_roll => v_roll,
+        p_name => v_name,
+        p_marks => v_marks,
+        p_class => v_class
+    );
+
+    -- Display the final result
+    DBMS_OUTPUT.PUT_LINE('--- Procedure Executed Successfully ---');
+    DBMS_OUTPUT.PUT_LINE('Roll: ' || v_roll || ', Name: ' || v_name || ', Class: ' || v_class);
+    
+    -- Commit the INSERT that happened inside the procedure
+    COMMIT;
+END;
+/
+
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------
+
+
+
+
+
+
+-- ============================================================
+-- COMPLETE WORKING PL/SQL PROGRAM: Student Grade Categorization
+-- ============================================================
+
+SET SERVEROUTPUT ON;
+
+--  DROP OLD TABLES (if they exist)
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE Result';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLE Stud_Marks';
+EXCEPTION WHEN OTHERS THEN NULL;
+END;
+/
+
+--  CREATE TABLES
+CREATE TABLE Stud_Marks (
+    Roll VARCHAR2(10) PRIMARY KEY,
+    Name VARCHAR2(50) NOT NULL,
+    Total_marks NUMBER(4, 0)
+);
+
+CREATE TABLE Result (
+    Roll VARCHAR2(10) PRIMARY KEY,
+    Name VARCHAR2(50),
+    Class VARCHAR2(30)
+);
+
+--  INSERT TEST DATA
+INSERT INTO Stud_Marks (Roll, Name, Total_marks) VALUES ('R101', 'Ravi Kumar', 995);
+INSERT INTO Stud_Marks (Roll, Name, Total_marks) VALUES ('R102', 'Sneha Patel', 970);
+INSERT INTO Stud_Marks (Roll, Name, Total_marks) VALUES ('R103', 'Amit Sharma', 950);
+INSERT INTO Stud_Marks (Roll, Name, Total_marks) VALUES ('R104', 'Pooja Singh', 880);
+INSERT INTO Stud_Marks (Roll, Name, Total_marks) VALUES ('R105', 'Rahul Das', 820);
+COMMIT;
+
+--  CREATE PROCEDURE
+CREATE OR REPLACE PROCEDURE Proc_Grade (
+    p_roll IN Stud_Marks.Roll%TYPE,
+    p_name OUT Stud_Marks.Name%TYPE,
+    p_marks IN Stud_Marks.Total_marks%TYPE,
+    p_class OUT Result.Class%TYPE
+)
+IS
+BEGIN
+    -- Retrieve student name
+    SELECT Name INTO p_name
+    FROM Stud_Marks
+    WHERE Roll = p_roll;
+
+    -- Categorize based on marks
+    IF p_marks <= 1500 AND p_marks >= 990 THEN
+        p_class := 'Distinction';
+    ELSIF p_marks BETWEEN 900 AND 989 THEN
+        p_class := 'First Class';
+    ELSIF p_marks BETWEEN 825 AND 899 THEN
+        p_class := 'Higher Second Class';
+    ELSE
+        p_class := 'Pass/Fail';
+    END IF;
+
+    -- Insert result record
+    INSERT INTO Result (Roll, Name, Class)
+    VALUES (p_roll, p_name, p_class);
+
+    DBMS_OUTPUT.PUT_LINE('Student ' || p_name || ' categorized as ' || p_class);
+
+EXCEPTION
+    WHEN DUP_VAL_ON_INDEX THEN
+        DBMS_OUTPUT.PUT_LINE('Record for Roll ' || p_roll || ' already exists in Result table.');
+    WHEN NO_DATA_FOUND THEN
+        p_name := 'N/A';
+        DBMS_OUTPUT.PUT_LINE('ERROR: Student Roll ' || p_roll || ' not found in Stud_Marks.');
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('UNEXPECTED ERROR in Proc_Grade: ' || SQLERRM);
+END Proc_Grade;
+/
+
+--  TEST BLOCK
+DECLARE
+    v_roll Stud_Marks.Roll%TYPE := 'R103'; -- Change roll to test others
+    v_marks Stud_Marks.Total_marks%TYPE;
+    v_name Result.Name%TYPE;
+    v_class Result.Class%TYPE;
+BEGIN
+    -- Fetch marks automatically from Stud_Marks
+    SELECT Total_marks INTO v_marks FROM Stud_Marks WHERE Roll = v_roll;
+
+    DBMS_OUTPUT.PUT_LINE('Attempting to grade Roll: ' || v_roll || ' with Marks: ' || v_marks);
+
+    -- Execute procedure
+    Proc_Grade(
+        p_roll => v_roll,
+        p_name => v_name,
+        p_marks => v_marks,
+        p_class => v_class
+    );
+
+    DBMS_OUTPUT.PUT_LINE('--- Procedure Executed Successfully ---');
+    DBMS_OUTPUT.PUT_LINE('Roll: ' || v_roll || ', Name: ' || v_name || ', Class: ' || v_class);
+
+    COMMIT;
+END;
+/
+
+--  DISPLAY RESULT TABLE CONTENTS
+SELECT * FROM Result;

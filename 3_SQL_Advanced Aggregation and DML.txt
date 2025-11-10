@@ -1,0 +1,91 @@
+SQL Queries
+Account(Acc_no, branch_name,balance)
+branch(branch_name,branch_city,assets)
+customer(cust_name,cust_street,cust_city)
+Depositor(cust_name,acc_no)
+Loan(loan_no,branch_name,amount)
+Borrower(cust_name,loan_no)
+
+Solve following query:
+
+a) Find the branches where average account balance > 15000.
+b) Find number of tuples in customer relation.
+c) Calculate total loan amount given by bank.
+d) Delete all loans with loan amount between 1300 and 1500.
+
+
+
+
+
+-----------------------------------------
+
+
+
+-- branch table
+CREATE TABLE branch (
+    branch_name VARCHAR(50) PRIMARY KEY,
+    branch_city VARCHAR(50) NOT NULL,
+    assets NUMERIC(15, 2) CHECK (assets >= 0)
+);
+
+-- customer table
+CREATE TABLE customer (
+    cust_name VARCHAR(50) PRIMARY KEY,
+    cust_street VARCHAR(50),
+    cust_city VARCHAR(50)
+);
+
+-- Account table
+CREATE TABLE Account (
+    Acc_no VARCHAR(10) PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    balance NUMERIC(10, 2) CHECK (balance >= 0),
+    FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+-- Loan table
+CREATE TABLE Loan (
+    loan_no VARCHAR(10) PRIMARY KEY,
+    branch_name VARCHAR(50) NOT NULL,
+    amount NUMERIC(10, 2) CHECK (amount > 0),
+    FOREIGN KEY (branch_name) REFERENCES branch(branch_name)
+);
+
+-- Depositor table (Many-to-Many between Customer and Account)
+CREATE TABLE Depositor (
+    cust_name VARCHAR(50),
+    acc_no VARCHAR(10),
+    PRIMARY KEY (cust_name, acc_no),
+    FOREIGN KEY (cust_name) REFERENCES customer(cust_name),
+    FOREIGN KEY (acc_no) REFERENCES Account(Acc_no)
+);
+
+-- Borrower table (Many-to-Many between Customer and Loan)
+CREATE TABLE Borrower (
+    cust_name VARCHAR(50),
+    loan_no VARCHAR(10),
+    PRIMARY KEY (cust_name, loan_no),
+    FOREIGN KEY (cust_name) REFERENCES customer(cust_name),
+    FOREIGN KEY (loan_no) REFERENCES Loan(loan_no)
+);
+
+
+
+SELECT branch_name
+FROM Account
+GROUP BY branch_name
+HAVING AVG(balance) > 15000;
+
+
+
+SELECT COUNT(*) AS total_customers
+FROM customer;
+
+
+SELECT SUM(amount) AS total_loan_amount
+FROM Loan;
+
+
+
+DELETE FROM Loan
+WHERE amount BETWEEN 1300 AND 1500;

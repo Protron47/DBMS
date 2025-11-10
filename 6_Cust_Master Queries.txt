@@ -1,0 +1,72 @@
+SQL queries
+
+Create table Cust_Master(Cust_no, Cust_name, Qty_Ordered, Order_date, Cust_addr ) 
+
+Cust_no is defined as primary key,
+
+Insert ten records in the table.
+List names of customers having 'a' as second letter in their name.
+List customers who stay in city whose first letter is 'M'
+Display order from Customer no C1002,C1005,C1007 and C1008
+List Clients who stay in either 'Banglore or 'Manglore'
+Create view Customer_View consisting of Cust_no, Qty_ordered and Order_date
+
+
+----
+
+
+CREATE TABLE Cust_Master (
+    Cust_no VARCHAR(10) PRIMARY KEY,
+    Cust_name VARCHAR(50) NOT NULL,
+    Qty_Ordered INT CHECK (Qty_Ordered > 0),
+    Order_date DATE,
+    Cust_addr VARCHAR(100)
+);
+
+
+INSERT INTO Cust_Master VALUES ('C1001', 'Anil Sharma', 10, '2025-01-15', 'Pune');
+INSERT INTO Cust_Master VALUES ('C1002', 'Bala Singh', 5, '2025-02-20', 'Mumbai');
+INSERT INTO Cust_Master VALUES ('C1003', 'Charu Patel', 20, '2025-03-01', 'Banglore');
+INSERT INTO Cust_Master VALUES ('C1004', 'Dinesh Rao', 8, '2025-04-10', 'Delhi');
+INSERT INTO Cust_Master VALUES ('C1005', 'Gopal Krishnan', 15, '2025-05-05', 'Manglore');
+INSERT INTO Cust_Master VALUES ('C1006', 'Hemant Verma', 3, '2025-06-12', 'Pune');
+INSERT INTO Cust_Master VALUES ('C1007', 'Kunal Saini', 7, '2025-07-25', 'Banglore');
+INSERT INTO Cust_Master VALUES ('C1008', 'Lata Gupta', 12, '2025-08-01', 'Chennai');
+INSERT INTO Cust_Master VALUES ('C1009', 'Maya Deshmukh', 9, '2025-09-18', 'Mumbai');
+INSERT INTO Cust_Master VALUES ('C1010', 'Navya Reddy', 2, '2025-10-04', 'Delhi');
+
+
+
+SELECT Cust_name
+FROM Cust_Master
+WHERE Cust_name LIKE '_a%';
+
+
+
+SELECT Cust_name
+FROM Cust_Master
+WHERE Cust_addr LIKE 'M%';
+
+
+
+
+
+SELECT *
+FROM Cust_Master
+WHERE Cust_no IN ('C1002', 'C1005', 'C1007', 'C1008');
+
+
+
+
+SELECT Cust_name
+FROM Cust_Master
+WHERE Cust_addr IN ('Banglore', 'Manglore');
+
+
+
+
+CREATE VIEW Customer_View AS
+SELECT Cust_no, Qty_Ordered, Order_date
+FROM Cust_Master;
+
+
